@@ -827,6 +827,31 @@ void ndp_msg_opt_set(struct ndp_msg *msg)
 }
 
 /**
+ * ndp_msg_xopt_set:
+ * @msg: message structure
+ * @ndp_xopt: option number
+ * @ndp_xopt_data: pointer to the option data/buffer
+ * @ndp_xopt_data_len: length of the option data/buffer
+ *
+ * Set extensible options
+ **/
+NDP_EXPORT
+void ndp_msg_xopt_set(struct ndp_msg *msg, int ndp_xopt,
+                      char *ndp_xopt_data, int ndp_xopt_data_len)
+{
+	char *xopt_start = (char *) ndp_msg_payload(msg) + ndp_msg_payload_len(msg);
+	struct nd_opt_hdr *xopt = (struct nd_opt_hdr *) xopt_start;
+	char *xopt_data = (char *) xopt + sizeof(struct nd_opt_hdr);
+
+	memcpy(xopt_data, ndp_xopt_data, ndp_xopt_data_len);
+
+	xopt_data += ndp_xopt_data_len;
+	xopt->nd_opt_type = ndp_xopt;
+	xopt->nd_opt_len = (xopt_data - xopt_start) >> 3;
+	msg->len += xopt_data - xopt_start;
+}
+
+/**
  * ndp_msg_send:
  * @ndp: libndp library context
  * @msg: message structure

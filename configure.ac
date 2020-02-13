@@ -39,7 +39,7 @@ AC_CHECK_HEADERS([stdint.h stdlib.h])
 AC_C_INLINE
 
 # Checks for library functions.
-AC_FUNC_MALLOC
+AC_CHECK_FUNCS([malloc])
 
 AC_ARG_ENABLE([logging],
 	AS_HELP_STRING([--disable-logging], [disable system logging @<:@default=enabled@:>@]),

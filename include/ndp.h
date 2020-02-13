@@ -82,6 +82,8 @@ void ndp_msg_ifindex_set(struct ndp_msg *msg, uint32_t ifindex);
 void ndp_msg_target_set(struct ndp_msg *msg, struct in6_addr *target);
 void ndp_msg_dest_set(struct ndp_msg *msg, struct in6_addr *dest);
 void ndp_msg_opt_set(struct ndp_msg *msg);
+void ndp_msg_xopt_set(struct ndp_msg *msg, int ndp_xopt,
+                      char *ndp_xopt_data, int ndp_xopt_data_len);
 int ndp_msg_send(struct ndp *ndp, struct ndp_msg *msg);
 int ndp_msg_send_with_flags(struct ndp *ndp, struct ndp_msg *msg, uint8_t flags);
 
