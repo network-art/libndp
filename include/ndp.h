@@ -191,6 +191,7 @@ int ndp_call_eventfd_handler(struct ndp *ndp);
 int ndp_callall_eventfd_handler(struct ndp *ndp);
 
 int ndp_open(struct ndp **p_ndp);
+int ndp_new(struct ndp **p_ndp, int sock);
 void ndp_close(struct ndp *ndp);
 
 

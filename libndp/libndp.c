@@ -1966,6 +1966,56 @@ close_sock:
 	return err;
 }
 
+static int ndp_sock_set(struct ndp *ndp, int sock)
+{
+	struct icmp6_filter flt;
+	int ret;
+	int err;
+	int val;
+	int i;
+
+	val = 1;
+	ret = setsockopt(sock, IPPROTO_IPV6, IPV6_RECVPKTINFO,
+			 &val, sizeof(val));
+	if (ret == -1) {
+		err(ndp, "Failed to setsockopt IPV6_RECVPKTINFO.");
+		err = -errno;
+    return err;
+	}
+
+	val = 255;
+	ret = setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
+			 &val, sizeof(val));
+	if (ret == -1) {
+		err(ndp, "Failed to setsockopt IPV6_MULTICAST_HOPS.");
+		err = -errno;
+    return err;
+	}
+
+	val = 1;
+	ret = setsockopt(sock, IPPROTO_IPV6, IPV6_RECVHOPLIMIT,
+			 &val, sizeof(val));
+	if (ret == -1) {
+		err(ndp, "Failed to setsockopt IPV6_RECVHOPLIMIT,.");
+		err = -errno;
+    return err;
+	}
+
+	ICMP6_FILTER_SETBLOCKALL(&flt);
+	for (i = 0; i < NDP_MSG_TYPE_LIST_SIZE; i++)
+		ICMP6_FILTER_SETPASS(ndp_msg_type_info(i)->raw_type, &flt);
+	ret = setsockopt(sock, IPPROTO_ICMPV6, ICMP6_FILTER, &flt,
+			 sizeof(flt));
+	if (ret == -1) {
+		err(ndp, "Failed to setsockopt ICMP6_FILTER.");
+		err = -errno;
+    return err;
+	}
+
+	ndp->sock = sock;
+	return 0;
+}
+
 static void ndp_sock_close(struct ndp *ndp)
 {
 	close(ndp->sock);
@@ -2191,6 +2241,46 @@ int ndp_open(struct ndp **p_ndp)
 
 	list_init(&ndp->msgrcv_handler_list);
 	err = ndp_sock_open(ndp);
+	if (err)
+		goto free_ndp;
+
+	*p_ndp = ndp;
+	return 0;
+free_ndp:
+	free(ndp);
+	return err;
+}
+
+/**
+ * ndp_new:
+ * @p_ndp: pointer where new libndp library context address will be stored
+ *
+ * Allocates and initializes library context, sets the socket supplied by app.
+ *
+ * Returns: zero on success or negative number in case of an error.
+ **/
+NDP_EXPORT
+int ndp_new(struct ndp **p_ndp, int sock)
+{
+	struct ndp *ndp;
+	const char *env;
+	int err;
+
+	ndp = myzalloc(sizeof(*ndp));
+	if (!ndp)
+		return -ENOMEM;
+	ndp->log_fn = log_stderr;
+	ndp->log_priority = LOG_ERR;
+	/* environment overwrites config */
+	env = getenv("NDP_LOG");
+	if (env != NULL)
+		ndp_set_log_priority(ndp, log_priority(env));
+
+	dbg(ndp, "ndp context %p created.", ndp);
+	dbg(ndp, "log_priority=%d", ndp->log_priority);
+
+	list_init(&ndp->msgrcv_handler_list);
+	err = ndp_sock_set(ndp, sock);
 	if (err)
 		goto free_ndp;
 
