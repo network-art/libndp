@@ -837,7 +837,7 @@ void ndp_msg_opt_set(struct ndp_msg *msg)
  **/
 NDP_EXPORT
 void ndp_msg_xopt_set(struct ndp_msg *msg, int ndp_xopt,
-                      char *ndp_xopt_data, int ndp_xopt_data_len)
+                      void *ndp_xopt_data, int ndp_xopt_data_len)
 {
 	char *xopt_start = (char *) ndp_msg_payload(msg) + ndp_msg_payload_len(msg);
 	struct nd_opt_hdr *xopt = (struct nd_opt_hdr *) xopt_start;
@@ -847,7 +847,8 @@ void ndp_msg_xopt_set(struct ndp_msg *msg, int ndp_xopt,
 
 	xopt_data += ndp_xopt_data_len;
 	xopt->nd_opt_type = ndp_xopt;
-	xopt->nd_opt_len = (xopt_data - xopt_start) >> 3;
+	xopt->nd_opt_len =
+    ((xopt_data - xopt_start) + sizeof(struct nd_opt_hdr)) >> 3;
 	msg->len += xopt_data - xopt_start;
 }
 
@@ -1292,6 +1293,10 @@ static struct ndp_msg_opt_type_info ndp_msg_opt_type_info_list[] =
 	[NDP_MSG_OPT_DNSSL] = {
 		.raw_type = __ND_OPT_DNSSL,
 		.raw_struct_size = sizeof(struct __nd_opt_dnssl),
+	},
+	[NDP_MSG_OPT_NODE_INFO] = {
+		.raw_type = __ND_OPT_NODE_INFO,
+		.raw_struct_size = __ND_OPT_NODE_INFO_SIZE,
 	},
 };
 

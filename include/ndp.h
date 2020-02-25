@@ -53,6 +53,9 @@ enum ndp_msg_type {
 	NDP_MSG_ALL, /* Matches all */
 };
 
+#define __ND_OPT_NODE_INFO      100
+#define __ND_OPT_NODE_INFO_SIZE 48
+
 #define ND_OPT_NORMAL       0x0000    /* default, no change to ND message */
 #define ND_OPT_NA_UNSOL     0x0001    /* Unsolicited Neighbour Advertisement */
 
@@ -83,7 +86,7 @@ void ndp_msg_target_set(struct ndp_msg *msg, struct in6_addr *target);
 void ndp_msg_dest_set(struct ndp_msg *msg, struct in6_addr *dest);
 void ndp_msg_opt_set(struct ndp_msg *msg);
 void ndp_msg_xopt_set(struct ndp_msg *msg, int ndp_xopt,
-                      char *ndp_xopt_data, int ndp_xopt_data_len);
+                      void *ndp_xopt_data, int ndp_xopt_data_len);
 int ndp_msg_send(struct ndp *ndp, struct ndp_msg *msg);
 int ndp_msg_send_with_flags(struct ndp *ndp, struct ndp_msg *msg, uint8_t flags);
 
@@ -126,6 +129,7 @@ enum ndp_msg_opt_type {
 	NDP_MSG_OPT_ROUTE, /* Route Information */
 	NDP_MSG_OPT_RDNSS, /* Recursive DNS Server */
 	NDP_MSG_OPT_DNSSL, /* DNS Search List */
+	NDP_MSG_OPT_NODE_INFO = 100, /* Node Information */
 };
 
 int ndp_msg_next_opt_offset(struct ndp_msg *msg, int offset,
